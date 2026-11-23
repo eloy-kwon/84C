@@ -188,8 +188,8 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
         <span><i style="background:var(--warn)"></i>다른 가구와 겹침</span>
         <span><i style="background:var(--bad)"></i>방 밖으로 나감</span>
         <span><i style="background:var(--window)"></i>창</span>
-        <span><i style="background:var(--fixture)"></i>고정 설비(싱크대·붙박이장·수납장)</span>
-        <span><i style="border:1px dashed var(--muted);background:color-mix(in srgb,var(--fixture) 35%,transparent)"></i>냉장고장 · 주방 장식장 · 침실2 붙박이장(옵션) · 문 열림 구간 (가구 배치 가능)</span>
+        <span><i style="background:var(--fixture)"></i>고정 설비(싱크대·아일랜드·주방 팬트리·붙박이장·수납장)</span>
+        <span><i style="border:1px dashed var(--muted);background:color-mix(in srgb,var(--fixture) 35%,transparent)"></i>냉장고장 · 커피 장식장 · 침실2 붙박이장(옵션) · 문 열림 구간 (가구 배치 가능)</span>
       </div>
       <div id="toast" class="toast" hidden></div>
     </div>
@@ -223,7 +223,8 @@ const ROOM_DEFS=[
 const FIXTURES=[
   {name:'수납장', x:4380, y:8670, w:1120, d:700, h:2100, block:true},
   {name:'냉장고장', x:9486, y:4486, w:847, d:2584, h:0, block:false, zone:true},
-  {name:'주방 장식장', x:4380, y:6636, w:1120, d:2034, h:0, block:false, zone:true},
+  {name:'주방 팬트리', x:4380, y:6636, w:1113, d:2034, h:2200, block:true},   // 시트 2034×1113 (서벽 아래쪽 2034, 폭 1113)
+  {name:'커피 장식장', x:5503, y:4519, w:607, d:1521, h:0, block:false, zone:true},   // 시트 596/1521/607: 팬트리 뒤 벽체 동쪽 면, 위에서 596 아래 1521 구간, 깊이 607 (손글씨 610/1480/600)
   {name:'붙박이장(옵션)', x:0, y:2628, w:1800, d:600, h:0, block:false, zone:true},   // 손글씨: 침실2 북벽 서쪽 1800×600
   {name:'문 열림', x:2123, y:2396, w:897, d:832, h:0, block:false, zone:true},     // 침실2 문 열림 구간 (시트: 동벽 벽 2396)
   {name:'문 열림', x:4993, y:2393, w:904, d:845, h:0, block:false, zone:true},     // 침실1 문 열림 구간 (시트: 동벽 벽 2393)
@@ -238,7 +239,7 @@ const FIXTURES=[
 // 벽체 덩어리(팬트리와 식당 사이 덕트·기둥)
 const VOIDS=[
   {x:4551,y:4486,w:952,d:2150},    // 팬트리-식당 사이 덕트·기둥
-  {x:3172,y:6008,w:1379,d:628},    // 현관 팬트리 위 벽체 (팬트리와 주방 장식장 사이)
+  {x:3172,y:6008,w:1379,d:628},    // 현관 팬트리 위 벽체 (팬트리와 주방 팬트리 사이)
   {x:10333,y:3605,w:378,d:3287},   // 주방 동측 두꺼운 벽
   {x:10483,y:6892,w:2015,d:728},   // 욕실2 위 벽체
   {x:12498,y:7104,w:1229,d:516}    // 드레스룸 위 벽체
