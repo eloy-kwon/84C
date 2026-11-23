@@ -156,7 +156,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
     <section class="card">
       <h2>방별 배치 현황 <span class="n" id="totalN"></span></h2>
       <div class="rooms" id="rooms"></div>
-      <p class="note">방 이름은 분양 도면 기준(안방=침실1). 방을 열면 치수를 고칠 수 있습니다. 벽·문 위치는 분양 도면, 치수는 실측 시트 기준이며 세대별 오차가 있습니다.</p>
+      <p class="note">방 이름은 분양 도면 기준(안방=침실1). ↔ 가로는 동서(화면 좌우), ↕ 세로는 남북(화면 위아래) 안목 치수. 방을 열면 치수를 고칠 수 있습니다. 벽·문 위치는 분양 도면, 치수는 실측 시트 기준이며 세대별 오차가 있습니다.</p>
     </section>
 
     <section class="card">
@@ -249,7 +249,7 @@ const OPENINGS=[
   {x:12393,y:5300,w:1807,h:30},   // 드레스룸 상·하부 연결
   {x:1972,y:4336,w:1040,h:300},   // 현관 → 복도
   {x:2100,y:6400,w:900,h:300},    // 현관문
-  {x:3250,y:4336,w:1230,h:300},   // 현관 팬트리 개구부 (복도 쪽)
+  {x:3000,y:4636,w:200,h:1046},   // 현관 팬트리 문 (서쪽 벽, 현관에서. 북벽에서 326 아래부터)
   {x:6023,y:3500,w:4156,h:200},   // 거실 ↔ 식당 오픈
   {x:5353,y:3650,w:300,h:800},    // 복도 ↔ 식당 오픈
   {x:5560,y:6600,w:4615,h:72},    // 식당 ↔ 주방 오픈
@@ -538,7 +538,7 @@ function draw2d(){
     const big=r.w*s>60; const fs=big?12:10;
     const [sx,sy]=toS(r.x,r.y+r.d);
     ctx.font=`500 ${fs}px ${css('--font')}`;
-    const t1=r.name, t2=(big&&r.d*s>40)?`${r.w}×${r.d}`:'';
+    const t1=r.name, t2=(big&&r.d*s>40)?`↔${r.w} ↕${r.d}`:'';
     const w1=ctx.measureText(t1).width; ctx.font=`10px ${css('--mono')}`; const w2=t2?ctx.measureText(t2).width:0;
     const bw=Math.max(w1,w2)+10, bh=t2?fs+16:fs+6;
     ctx.fillStyle=hexA(isDark()?'#1e211f':'#fbfaf7',0.82);ctx.fillRect(sx+4,sy+4,bw,bh);
@@ -653,7 +653,7 @@ function renderPresets(){
     el.appendChild(b);
   }
   const sel=$('#roomSel');sel.innerHTML='';
-  for(const r of rooms.filter(r=>r.kind!=='bath')){const o=document.createElement('option');o.value=r.id;o.textContent=`${r.name} (${r.w}×${r.d})`;sel.appendChild(o);}
+  for(const r of rooms.filter(r=>r.kind!=='bath')){const o=document.createElement('option');o.value=r.id;o.textContent=`${r.name} (↔${r.w} ↕${r.d})`;sel.appendChild(o);}
 }
 function addItem(p){
   const room=roomById($('#roomSel').value)||rooms[0];
@@ -716,12 +716,12 @@ function renderRooms(){
     const lvl=sts.some(s=>s.level==='out')?'out':sts.some(s=>s.level==='overlap')?'overlap':list.length?'ok':'';
     const wrap=document.createElement('div');wrap.className='room'+(r.id===selRoomId?' on':'');
     const used=list.reduce((a,it)=>a+it.w*it.d,0);const area=partsOf(r).reduce((a,p)=>a+p.w*p.d,0)-rooms.filter(n=>n.parent===r.id).reduce((a,n)=>a+n.w*n.d,0);
-    wrap.innerHTML=`<button type="button" class="hd"><span class="dot ${lvl}"></span><span class="nm">${r.name}</span><span class="sz">${r.w}×${r.d}</span><span class="cnt">${list.length}개</span></button>`;
+    wrap.innerHTML=`<button type="button" class="hd"><span class="dot ${lvl}"></span><span class="nm">${r.name}</span><span class="sz">↔${r.w} ↕${r.d}</span><span class="cnt">${list.length}개</span></button>`;
     wrap.querySelector('.hd').addEventListener('click',()=>{selRoomId=selRoomId===r.id?null:r.id;renderSide();draw2d();});
     if(r.id===selRoomId){
       const bd=document.createElement('div');bd.className='bd';
       bd.innerHTML=`<div class="stat">면적 ${(area/1e6).toFixed(2)}㎡ · 가구 바닥면적 ${(used/1e6).toFixed(2)}㎡ (${area?Math.round(used/area*100):0}%)</div>
-        <div class="row">${r.extra?'<span class="muted">ㄱ자 방이라 치수 수정은 지원하지 않습니다.</span>':`<label>가로(mm)<input type="number" id="rW" value="${r.w}" step="10" min="500"></label><label>세로(mm)<input type="number" id="rD" value="${r.d}" step="10" min="500"></label>`}
+        <div class="row">${r.extra?'<span class="muted">ㄱ자 방이라 치수 수정은 지원하지 않습니다.</span>':`<label>가로 ↔ 동서(mm)<input type="number" id="rW" value="${r.w}" step="10" min="500"></label><label>세로 ↕ 남북(mm)<input type="number" id="rD" value="${r.d}" step="10" min="500"></label>`}
           <button type="button" class="btn sm" id="rPack" title="이 방 가구를 북서쪽부터 차례로 채워 넣어 봅니다">자동 정렬</button></div>
         <div class="ilist">${list.length?list.map((it,i)=>`<div class="item${it.id===selId?' on':''}" data-id="${it.id}"><span class="sw" style="background:${it.color}"></span><span class="nm">${it.name}</span><span class="sz">${it.w}×${it.d}</span><span class="badge ${sts[i].level}">${sts[i].level==='ok'?'OK':sts[i].level==='overlap'?'겹침':'안 들어감'}</span></div>`).join(''):'<div class="muted">배치된 가구 없음</div>'}</div>`;
       const rW=bd.querySelector('#rW'),rD=bd.querySelector('#rD');
@@ -811,7 +811,7 @@ function buildStatic(){
       const m=new THREE.Mesh(new THREE.BoxGeometry(p.w/1000,0.04,p.d/1000),new THREE.MeshLambertMaterial({color:new THREE.Color(floorColor(r))}));
       m.position.set((p.x+p.w/2)/1000,-0.02+(r.parent?0.005:0),-(p.y+p.d/2)/1000);g.add(m);
     }
-    const {tex,aspect}=textTexture(`${r.name}  ${r.w}×${r.d}`,{size:40,color:dark?'#d7d5cc':'#4a4d47',bold:false});
+    const {tex,aspect}=textTexture(`${r.name}  ↔${r.w} ↕${r.d}`,{size:40,color:dark?'#d7d5cc':'#4a4d47',bold:false});
     const lw=Math.min(r.w/1000*0.9,2.6);const lp=new THREE.Mesh(new THREE.PlaneGeometry(lw,lw/aspect),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));
     lp.rotation.x=-Math.PI/2;lp.position.set((r.x+r.w/2)/1000,0.012,-(r.y+r.d-Math.min(r.d*0.18,450))/1000);
     if(!(r.kind==='room'&&!r.parent))lp.position.z=-(r.y+r.d/2)/1000;
