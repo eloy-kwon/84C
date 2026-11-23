@@ -156,7 +156,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
     <section class="card">
       <h2>방별 배치 현황 <span class="n" id="totalN"></span></h2>
       <div class="rooms" id="rooms"></div>
-      <p class="note">방 이름은 분양 도면 기준(안방=침실1). ↔ 가로는 동서(화면 좌우), ↕ 세로는 남북(화면 위아래) 안목 치수. 방을 열면 치수를 고칠 수 있습니다. 벽·문 위치는 분양 도면, 치수는 실측 시트 기준이며 세대별 오차가 있습니다.</p>
+      <p class="note">방 이름은 실측 시트 기준(침실2·침실1·안방). ↔ 가로는 동서(화면 좌우), ↕ 세로는 남북(화면 위아래) 안목 치수. 방을 열면 치수를 고칠 수 있습니다. 벽·문 위치는 분양 도면, 치수는 실측 시트 기준이며 세대별 오차가 있습니다.</p>
     </section>
 
     <section class="card">
@@ -189,7 +189,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
         <span><i style="background:var(--bad)"></i>방 밖으로 나감</span>
         <span><i style="background:var(--window)"></i>창</span>
         <span><i style="background:var(--fixture)"></i>고정 설비(싱크대·붙박이장·수납장)</span>
-        <span><i style="border:1px dashed var(--muted);background:transparent"></i>냉장고장 · 주방 장식장 · 침실3 붙박이장(옵션)</span>
+        <span><i style="border:1px dashed var(--muted);background:transparent"></i>냉장고장 · 주방 장식장 · 침실2 붙박이장(옵션) · 문 열림 구간</span>
       </div>
       <div id="toast" class="toast" hidden></div>
     </div>
@@ -202,13 +202,13 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
 'use strict';
 const WALL=150, WALL_H=2300, SNAP=50, STORE_KEY='mcf84c-plan-v3', PLAN_VER=3; // PLAN_VER: ROOM_DEFS 기본 치수가 바뀌면 올린다. 저장된 roomDims는 같은 버전일 때만 적용.
 
-// 실측 시트(mm) + 분양 도면에서 읽은 방 구조. x: 서→동, y: 남→북, 원점은 침실3 남서쪽 안쪽 모서리.
+// 실측 시트(mm) + 분양 도면에서 읽은 방 구조. x: 서→동, y: 남→북, 원점은 침실2(서쪽 끝 방) 남서쪽 안쪽 모서리.
 // extra: 같은 방에 속한 추가 영역(ㄱ자 방). 주방/식당은 상부(냉장고장·싱크대 쪽)+하부(식탁 쪽), 드레스룸은 상부+안방 쪽 하부.
 const ROOM_DEFS=[
-  {id:'b3',  name:'침실3',       x:0,     y:0,    w:3020, d:3228, kind:'room'},
-  {id:'b2',  name:'침실2',       x:3170,  y:0,    w:2727, d:3238, kind:'room'},
+  {id:'b3',  name:'침실2',       x:0,     y:0,    w:3020, d:3228, kind:'room'},
+  {id:'b2',  name:'침실1',       x:3170,  y:0,    w:2727, d:3238, kind:'room'},
   {id:'liv', name:'거실',        x:6047,  y:0,    w:4514, d:3605, kind:'room'},
-  {id:'mas', name:'안방(침실1)', x:10711, y:840,  w:3594, d:3597, kind:'room'},
+  {id:'mas', name:'안방',        x:10711, y:840,  w:3594, d:3597, kind:'room'},
   {id:'din', name:'주방/식당',   x:4380,  y:6636, w:5953, d:2734, kind:'room', extra:[{x:5503,y:3605,w:4830,d:3031}]},
   {id:'hall',name:'복도',        x:1662,  y:3388, w:4385, d:1098, kind:'hall'},   // 거실 서쪽 벽(6047)까지
   {id:'ent', name:'현관',        x:1512,  y:4486, w:1510, d:2076, kind:'hall'},
@@ -224,7 +224,10 @@ const FIXTURES=[
   {name:'수납장', x:4380, y:8670, w:1120, d:700, h:2100, block:true},
   {name:'냉장고장', x:9486, y:4486, w:847, d:2584, h:0, block:false, zone:true},
   {name:'주방 장식장', x:4380, y:6636, w:1120, d:2034, h:0, block:false, zone:true},
-  {name:'붙박이장(옵션)', x:0, y:2628, w:1800, d:600, h:0, block:false, zone:true},   // 손글씨: 침실3 북벽 서쪽 1800×600
+  {name:'붙박이장(옵션)', x:0, y:2628, w:1800, d:600, h:0, block:false, zone:true},   // 손글씨: 침실2 북벽 서쪽 1800×600
+  {name:'문 열림', x:2123, y:2396, w:897, d:832, h:0, block:false, zone:true},     // 침실2 문 열림 구간 (시트: 동벽 벽 2396)
+  {name:'문 열림', x:4993, y:2393, w:904, d:845, h:0, block:false, zone:true},     // 침실1 문 열림 구간 (시트: 동벽 벽 2393)
+  {name:'문 열림', x:10711, y:3445, w:992, d:992, h:0, block:false, zone:true},    // 안방 문 열림 구간 (서벽 북쪽 끝 992)
   {name:'싱크대·조리대', x:5500, y:8770, w:4833, d:600, h:850, block:true},
   {name:'신발장', x:1512, y:4486, w:460, d:1117, h:2100, block:true},
   {name:'붙박이장', x:12498, y:6504, w:2622, d:600, h:2200, block:true},
@@ -240,8 +243,8 @@ const VOIDS=[
 ];
 // 문·개구부: 이 사각형에 걸치는 벽은 지움
 const OPENINGS=[
-  {x:2123,y:3150,w:897,h:300},    // 침실3 문 (북벽 동쪽 끝, 복도로) — 시트: 북벽 벽 2123, 동벽 벽 2396(문 열림 832)
-  {x:4993,y:3150,w:904,h:300},    // 침실2 문 (북벽 동쪽 끝) — 시트: 북벽 벽 1823, 동벽 벽 2393(문 열림 845)
+  {x:2123,y:3150,w:897,h:300},    // 침실2 문 (북벽 동쪽 끝, 복도로) — 시트: 북벽 벽 2123, 동벽 벽 2396(문 열림 832)
+  {x:4993,y:3150,w:904,h:300},    // 침실1 문 (북벽 동쪽 끝) — 시트: 북벽 벽 1823, 동벽 벽 2393(문 열림 845)
   {x:1400,y:3450,w:400,h:800},    // 욕실1 문 (동쪽 벽 아래쪽, 복도로)
   {x:10650,y:3445,w:150,h:992},   // 안방 문 (서벽 북쪽 끝) — 시트: 서벽 벽 2605
   {x:12400,y:4650,w:200,h:800},   // 욕실2 문 (동쪽 벽, 드레스룸에서)
@@ -258,8 +261,8 @@ const OPENINGS=[
   {x:11500,y:7660,w:30,h:1670}    // 다용도실 입구 ↔ 본실
 ];
 const WINDOWS=[
-  {x1:602,y1:0,x2:2402,y2:0},          // 침실3 1800 (602/618)
-  {x1:3620,y1:0,x2:5120,y2:0},         // 침실2 1500 (450/777)
+  {x1:602,y1:0,x2:2402,y2:0},          // 침실2 1800 (602/618)
+  {x1:3620,y1:0,x2:5120,y2:0},         // 침실1 1500 (450/777)
   {x1:6560,y1:0,x2:10060,y2:0},        // 거실 3500 (513/501)
   {x1:14305,y1:2823,x2:14305,y2:4023}, // 안방 동측 1200 (북벽에서 414)
   {x1:10711,y1:840,x2:12694,y2:840},   // 안방 → 발코니 창호 1983
