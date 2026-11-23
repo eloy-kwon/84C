@@ -16,7 +16,7 @@
 
 ## 평면 데이터
 
-`plan84c.html` 상단 스크립트의 `ROOM_DEFS`, `FIXTURES`, `VOIDS`, `OPENINGS`, `WINDOWS`가 평면 정의입니다. 좌표는 침실3 남서쪽 안쪽 모서리가 원점이고 x는 동쪽, y는 북쪽으로 증가합니다. 침실3·침실2·거실·안방과 그 창·문은 손글씨 실측 도면(`ref/measured-plan-annotated.jpg`) 값이고, 나머지는 실측 시트와 분양 도면 기준이라 세대별 오차가 있습니다.
+`plan84c.html` 상단 스크립트의 `ROOM_DEFS`, `FIXTURES`, `VOIDS`, `OPENINGS`, `WINDOWS`가 평면 정의입니다. 좌표는 침실3 남서쪽 안쪽 모서리가 원점이고 x는 동쪽, y는 북쪽으로 증가합니다. 치수와 창 위치는 실측 시트, 문 위치와 붙박이장 구간은 손글씨 실측 도면(`ref/measured-plan-annotated.jpg`), 그 외 벽 구조는 분양 도면 기준이라 세대별 오차가 있습니다.
 
 ## 게시 방법
 
