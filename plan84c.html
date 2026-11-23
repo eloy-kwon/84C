@@ -189,6 +189,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
         <span><i style="background:var(--bad)"></i>방 밖으로 나감</span>
         <span><i style="background:var(--window)"></i>창</span>
         <span><i style="background:var(--fixture)"></i>고정 설비(싱크대·아일랜드·주방 팬트리·붙박이장·수납장)</span>
+        <span><i style="background:repeating-linear-gradient(135deg,var(--wall) 0 1px,transparent 1px 3px)"></i>벽체·덕트(공간 아님)</span>
         <span><i style="border:1px dashed var(--muted);background:color-mix(in srgb,var(--fixture) 35%,transparent)"></i>냉장고장 · 커피 장식장 · 침실2 붙박이장(옵션) · 문 열림 구간 (가구 배치 가능)</span>
       </div>
       <div id="toast" class="toast" hidden></div>
@@ -519,7 +520,8 @@ function draw2d(){
     if(f.zone){ctx.fillStyle=css('--fixture');ctx.globalAlpha=0.35;ctx.fillRect(sx,sy,f.w*s,f.d*s);ctx.globalAlpha=1;ctx.setLineDash([5,4]);ctx.strokeStyle=css('--muted');ctx.lineWidth=1.2;ctx.strokeRect(sx+1,sy+1,f.w*s-2,f.d*s-2);}
     else{ctx.fillStyle=css('--fixture');ctx.fillRect(sx,sy,f.w*s,f.d*s);ctx.strokeStyle=css('--line-strong');ctx.lineWidth=1;ctx.strokeRect(sx,sy,f.w*s,f.d*s);}
     ctx.restore();}
-  for(const v of VOIDS){const [sx,sy]=toS(v.x,v.y+v.d);ctx.fillStyle=css('--wall');ctx.globalAlpha=0.85;ctx.fillRect(sx,sy,v.w*s,v.d*s);ctx.globalAlpha=1;}
+  // 벽체 덩어리: 빗금(공간이 아니라 구조물임을 표시)
+  for(const v of VOIDS){const [sx,sy]=toS(v.x,v.y+v.d);const vw=v.w*s,vh=v.d*s;ctx.save();ctx.beginPath();ctx.rect(sx,sy,vw,vh);ctx.clip();ctx.fillStyle=css('--wall');ctx.globalAlpha=0.18;ctx.fillRect(sx,sy,vw,vh);ctx.globalAlpha=0.7;ctx.strokeStyle=css('--wall');ctx.lineWidth=1;ctx.beginPath();for(let k=-vh;k<vw+vh;k+=7){ctx.moveTo(sx+k,sy+vh);ctx.lineTo(sx+k+vh,sy);}ctx.stroke();ctx.restore();}
   // walls
   ctx.strokeStyle=css('--wall');ctx.lineWidth=Math.max(2,WALL*s);ctx.lineCap='square';ctx.beginPath();
   for(const sg of wallSegs()){const [a,b2]=toS(sg.x1,sg.y1),[c,d]=toS(sg.x2,sg.y2);ctx.moveTo(a,b2);ctx.lineTo(c,d);}
