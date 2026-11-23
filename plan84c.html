@@ -189,7 +189,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
         <span><i style="background:var(--bad)"></i>방 밖으로 나감</span>
         <span><i style="background:var(--window)"></i>창</span>
         <span><i style="background:var(--fixture)"></i>고정 설비(싱크대·붙박이장·수납장)</span>
-        <span><i style="border:1px dashed var(--muted);background:transparent"></i>냉장고장 · 주방 장식장 · 침실2 붙박이장(옵션) · 문 열림 구간</span>
+        <span><i style="border:1px dashed var(--muted);background:color-mix(in srgb,var(--fixture) 35%,transparent)"></i>냉장고장 · 주방 장식장 · 침실2 붙박이장(옵션) · 문 열림 구간 (가구 배치 가능)</span>
       </div>
       <div id="toast" class="toast" hidden></div>
     </div>
@@ -229,6 +229,7 @@ const FIXTURES=[
   {name:'문 열림', x:4993, y:2393, w:904, d:845, h:0, block:false, zone:true},     // 침실1 문 열림 구간 (시트: 동벽 벽 2393)
   {name:'문 열림', x:10711, y:3445, w:992, d:992, h:0, block:false, zone:true},    // 안방 문 열림 구간 (서벽 북쪽 끝 992)
   {name:'싱크대·조리대', x:5500, y:8770, w:4833, d:600, h:850, block:true},
+  {name:'아일랜드', x:6620, y:5755, w:1760, d:710, h:850, block:true},   // 손글씨 1760×710. 남쪽 가장자리는 거실 경계(3605)에서 시트 점선 2150 위. 동서 위치는 시트 그림 비례
   {name:'신발장', x:1512, y:4486, w:460, d:1117, h:2100, block:true},
   {name:'붙박이장', x:12498, y:6504, w:2622, d:600, h:2200, block:true},
   {name:'붙박이장', x:14520, y:5315, w:600, d:1189, h:2200, block:true},
@@ -237,6 +238,7 @@ const FIXTURES=[
 // 벽체 덩어리(팬트리와 식당 사이 덕트·기둥)
 const VOIDS=[
   {x:4551,y:4486,w:952,d:2150},    // 팬트리-식당 사이 덕트·기둥
+  {x:3172,y:6008,w:1379,d:628},    // 현관 팬트리 위 벽체 (팬트리와 주방 장식장 사이)
   {x:10333,y:3605,w:378,d:3287},   // 주방 동측 두꺼운 벽
   {x:10483,y:6892,w:2015,d:728},   // 욕실2 위 벽체
   {x:12498,y:7104,w:1229,d:516}    // 드레스룸 위 벽체
@@ -259,6 +261,10 @@ const OPENINGS=[
   {x:5560,y:6600,w:4716,h:72},    // 식당 ↔ 주방 오픈
   {x:10300,y:8500,w:220,h:840},   // 주방 → 다용도실 입구 (싱크대 끝 오른쪽)
   {x:11500,y:7660,w:30,h:1670}    // 다용도실 입구 ↔ 본실
+];
+// 실측 치수 표시(2D): 선과 숫자만 그린다.
+const DIMS=[
+  {x1:8800,y1:3605,x2:8800,y2:5755,label:'2150'}   // 거실 경계 ↔ 아일랜드 남쪽 가장자리 (시트 점선)
 ];
 const WINDOWS=[
   {x1:602,y1:0,x2:2402,y2:0},          // 침실2 1800 (602/618)
@@ -507,7 +513,7 @@ function draw2d(){
   }
   // fixtures & wall masses
   for(const f of FIXTURES){const [sx,sy]=toS(f.x,f.y+f.d);ctx.save();
-    if(f.zone){ctx.setLineDash([5,4]);ctx.strokeStyle=css('--muted');ctx.lineWidth=1.2;ctx.strokeRect(sx+1,sy+1,f.w*s-2,f.d*s-2);}
+    if(f.zone){ctx.fillStyle=css('--fixture');ctx.globalAlpha=0.35;ctx.fillRect(sx,sy,f.w*s,f.d*s);ctx.globalAlpha=1;ctx.setLineDash([5,4]);ctx.strokeStyle=css('--muted');ctx.lineWidth=1.2;ctx.strokeRect(sx+1,sy+1,f.w*s-2,f.d*s-2);}
     else{ctx.fillStyle=css('--fixture');ctx.fillRect(sx,sy,f.w*s,f.d*s);ctx.strokeStyle=css('--line-strong');ctx.lineWidth=1;ctx.strokeRect(sx,sy,f.w*s,f.d*s);}
     ctx.restore();}
   for(const v of VOIDS){const [sx,sy]=toS(v.x,v.y+v.d);ctx.fillStyle=css('--wall');ctx.globalAlpha=0.85;ctx.fillRect(sx,sy,v.w*s,v.d*s);ctx.globalAlpha=1;}
@@ -519,9 +525,13 @@ function draw2d(){
   ctx.strokeStyle=css('--window');ctx.lineWidth=Math.max(2,WALL*s*0.5);ctx.lineCap='butt';ctx.beginPath();
   for(const w of WINDOWS){const [a,b2]=toS(w.x1,w.y1),[c,d]=toS(w.x2,w.y2);ctx.moveTo(a,b2);ctx.lineTo(c,d);}
   ctx.stroke();
+  // dimension annotations
+  ctx.save();ctx.strokeStyle=css('--accent');ctx.fillStyle=css('--accent');ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.font=`500 10px ${css('--mono')}`;ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const d of DIMS){const [a,b2]=toS(d.x1,d.y1),[c,e]=toS(d.x2,d.y2);ctx.beginPath();ctx.moveTo(a,b2);ctx.lineTo(c,e);ctx.stroke();const tw=ctx.measureText(d.label).width+6,mx=(a+c)/2,my=(b2+e)/2;ctx.save();ctx.fillStyle=css('--panel');ctx.fillRect(mx-tw/2,my-7,tw,14);ctx.restore();ctx.fillText(d.label,mx,my);}
+  ctx.restore();
   // fixture labels
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=css('--muted');ctx.font=`10px ${css('--font')}`;
-  for(const f of FIXTURES){if(f.w*s<28||f.d*s<10)continue;const [sx,sy]=toS(f.x+f.w/2,f.y+f.d/2);ctx.save();if(f.d>f.w){ctx.translate(sx,sy);ctx.rotate(-Math.PI/2);ctx.fillText(f.name,0,0,f.d*s-4);}else ctx.fillText(f.name,sx,sy,f.w*s-4);ctx.restore();}
+  for(const f of FIXTURES){if(f.w*s<28||f.d*s<10)continue;const [sx,sy]=toS(f.x+f.w/2,f.y+f.d/2);const vert=f.d>f.w;const len=(vert?f.d:f.w)*s,thick=(vert?f.w:f.d)*s;const label=len>90?`${f.name} ${f.w}×${f.d}`:f.name;ctx.save();if(vert){ctx.translate(sx,sy);ctx.rotate(-Math.PI/2);ctx.fillText(label,0,0,len-4);}else ctx.fillText(label,sx,sy,len-4);ctx.restore();}
   // items
   const st={};
   for(const it of items){
@@ -844,7 +854,7 @@ function buildStatic(){
   for(const f of FIXTURES){
     const hh=f.zone?0:Math.max(f.h,30)/1000;
     if(!f.zone){const m=new THREE.Mesh(new THREE.BoxGeometry(f.w/1000,hh,f.d/1000),fixMat);m.position.set((f.x+f.w/2)/1000,hh/2,-(f.y+f.d/2)/1000);g.add(m);}
-    const {tex,aspect}=textTexture(f.name,{size:36,color:dark?'#e7e5de':'#333',bold:false});
+    const {tex,aspect}=textTexture(`${f.name} ${f.w}×${f.d}`,{size:36,color:dark?'#e7e5de':'#333',bold:false});
     const lw=Math.min(f.w,1400)/1000;const lp=new THREE.Mesh(new THREE.PlaneGeometry(lw,lw/aspect),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));
     lp.rotation.x=-Math.PI/2;lp.position.set((f.x+f.w/2)/1000,hh+0.01,-(f.y+f.d/2)/1000);g.add(lp);
   }
