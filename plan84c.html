@@ -175,7 +175,7 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);b
 
   <section class="stage">
     <div class="stage-bar">
-      <span id="hint">드래그: 가구 이동 · 빈 곳 드래그: 화면 이동 · 휠/핀치: 확대</span>
+      <span id="hint">드래그: 가구 이동(벽·가구 가장자리 60mm 안이면 밀착) · 빈 곳 드래그: 화면 이동 · 휠/핀치: 확대</span>
       <span class="sp"></span>
       <button type="button" class="btn sm" id="btnFit">화면 맞춤</button>
       <button type="button" class="btn sm" id="btnTop" hidden>위에서 보기</button>
@@ -396,6 +396,16 @@ function packRoom(room){
   }
   return failed;
 }
+// 위치 스냅: 가구 가장자리가 벽·다른 가구·고정 설비 가장자리에서 th(mm) 안이면 그 선에 밀착. 아니면 grid=true일 때 50mm 격자, 아니면 그대로.
+function snapPos(it,cx,cy,th,grid){
+  const s=it.rot%180!==0; const w=s?it.d:it.w, d=s?it.w:it.d;
+  const xs=[],ys=[]; const room=roomAt(cx,cy);
+  if(room) for(const p of partsOf(room)){xs.push(p.x,p.x+p.w);ys.push(p.y,p.y+p.d);}
+  for(const o of items){if(o===it)continue;const f=footprint(o);xs.push(f.x,f.x+f.w);ys.push(f.y,f.y+f.d);}
+  for(const f of blockers()){xs.push(f.x,f.x+f.w);ys.push(f.y,f.y+f.d);}
+  const pick=(lines,c,half)=>{let best=null;for(const L of lines)for(const e of [-half,half]){const dd=L-(c+e);if(Math.abs(dd)<th&&(best===null||Math.abs(dd)<Math.abs(best)))best=dd;}return best!==null?c+best:grid?Math.round(c/SNAP)*SNAP:c;};
+  return {cx:pick(xs,cx,w/2),cy:pick(ys,cy,d/2)};
+}
 
 // ---------- state ----------
 function mk(presetName,cx,cy,rot){const p=PRESETS.find(p=>p.name===presetName);return Object.assign({},p,{id:uid++,cx,cy,rot});}
@@ -609,7 +619,7 @@ c2d.addEventListener('pointermove',e=>{
   if(Math.hypot(dx,dy)>3) drag.moved=true;
   if(drag.kind==='pan'){v2.cx=drag.cx-dx/v2.s;v2.cy=drag.cy+dy/v2.s;draw2d();return;}
   const rect=c2d.getBoundingClientRect();const [px,py]=toP(e.clientX-rect.left,e.clientY-rect.top);
-  drag.it.cx=Math.round((px-drag.offX)/SNAP)*SNAP;drag.it.cy=Math.round((py-drag.offY)/SNAP)*SNAP;
+  Object.assign(drag.it,snapPos(drag.it,px-drag.offX,py-drag.offY,60,true));
   draw2d();renderSel();
 });
 function endPtr(e){
@@ -640,6 +650,7 @@ document.addEventListener('keydown',e=>{
   else if(k==='ArrowLeft'){it.cx-=SNAP;} else if(k==='ArrowRight'){it.cx+=SNAP;}
   else if(k==='ArrowUp'){it.cy+=SNAP;} else if(k==='ArrowDown'){it.cy-=SNAP;}
   else return;
+  if(k.startsWith('Arrow'))Object.assign(it,snapPos(it,it.cx,it.cy,30,false));
   e.preventDefault();changed();
 });
 function rotateSel(){const it=items.find(i=>i.id===selId);if(!it)return;it.rot=(it.rot+90)%360;changed();}
@@ -890,7 +901,7 @@ function setView(v){
   view=v;
   $('#tab2d').classList.toggle('on',v==='2d');$('#tab3d').classList.toggle('on',v==='3d');
   c2d.hidden=v!=='2d';$('#c3d').hidden=v!=='3d';$('#btnTop').hidden=v!=='3d';
-  $('#hint').textContent=v==='2d'?'드래그: 가구 이동 · 빈 곳 드래그: 화면 이동 · 휠/핀치: 확대':'드래그: 회전 · Shift+드래그 / 우클릭 드래그: 이동 · 휠/핀치: 확대 · 배치 편집은 2D에서';
+  $('#hint').textContent=v==='2d'?'드래그: 가구 이동(벽·가구 가장자리 60mm 안이면 밀착) · 빈 곳 드래그: 화면 이동 · 휠/핀치: 확대':'드래그: 회전 · Shift+드래그 / 우클릭 드래그: 이동 · 휠/핀치: 확대 · 배치 편집은 2D에서';
   if(v==='2d'){resize2d();}else{if(!raf)raf=requestAnimationFrame(loop);setTimeout(size3d,0);}
 }
 $('#tab2d').addEventListener('click',()=>setView('2d'));$('#tab3d').addEventListener('click',()=>setView('3d'));
